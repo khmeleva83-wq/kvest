@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИИ или Человек? Детектив-квест</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7f5ff;color:#1a1a1a;min-height:100vh;padding:1rem}
+.page{max-width:480px;margin:0 auto}
+
+/* шапка */
+.header{text-align:center;padding:1.5rem 1rem 1rem}
+.header-emoji{font-size:40px;margin-bottom:8px}
+.header h1{font-size:22px;font-weight:700;color:#3C3489;margin-bottom:6px;line-height:1.3}
+.header p{font-size:14px;color:#666;line-height:1.6}
+.vpn-note{display:inline-block;margin-top:10px;font-size:12px;background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;padding:4px 12px;border-radius:20px}
+
+/* игра */
+.game{padding:.5rem 0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.star{font-size:13px;color:#888}
+.bar{height:5px;border-radius:3px;background:#e0dff5;margin-bottom:1rem;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.trap{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1;margin-bottom:.75rem;display:inline-block}
+.card{border-radius:16px;padding:1.25rem;margin-bottom:.75rem;border:1.5px solid}
+.loc{font-size:12px;font-weight:600;margin-bottom:5px}
+.ttl{font-size:16px;font-weight:600;margin-bottom:.75rem;line-height:1.35}
+.body{font-size:13px;line-height:1.65}
+.lbl{font-weight:700;display:block;margin-top:8px;margin-bottom:1px;font-size:12px;opacity:.7}
+.choices{display:flex;flex-direction:column;gap:7px;margin-bottom:.5rem}
+.btn{padding:11px 14px;border-radius:10px;border:1.5px solid #ccc;background:#fff;font-size:13px;text-align:left;cursor:pointer;line-height:1.45;transition:background .15s;color:#1a1a1a}
+.btn:hover:not(:disabled){background:#f0eeff}
+.btn:disabled{cursor:default}
+.btn.ok{background:#EAF3DE;border-color:#3B6D11;color:#27500A}
+.btn.no{background:#FCEBEB;border-color:#A32D2D;color:#791F1F}
+.fb{border-radius:10px;padding:.75rem 1rem;font-size:13px;line-height:1.55;display:none;margin-top:.5rem}
+.fb.show{display:block}
+.fb.ok{background:#EAF3DE;color:#27500A;border:1px solid #C0DD97}
+.fb.no{background:#FCEBEB;color:#791F1F;border:1px solid #F7C1C1}
+.fbh{font-weight:700;margin-bottom:3px}
+.next{margin-top:.75rem;width:100%;padding:13px;border-radius:12px;border:none;background:#534AB7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:none;transition:background .15s}
+.next:hover{background:#3C3489}
+
+/* финал */
+.end{text-align:center;padding:1.5rem .5rem 2rem;display:none}
+.escore{font-size:48px;font-weight:700;color:#3C3489}
+.esub{font-size:13px;color:#888;margin-bottom:.75rem}
+.ebadge{display:inline-block;padding:5px 18px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:1rem}
+.etext{font-size:14px;line-height:1.7;margin-bottom:1.25rem;color:#333}
+.sharebox{background:#f0eeff;border-radius:12px;padding:.75rem 1rem;margin-bottom:1rem;font-size:12px;color:#888;line-height:1.55;border:1px solid #CECBF6}
+.sharetext{font-style:italic;color:#3C3489;margin-top:3px;font-size:13px;font-weight:500}
+.restart{padding:12px 28px;border-radius:12px;border:none;background:#534AB7;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.restart:hover{background:#3C3489}
+
+/* футер */
+.footer{text-align:center;padding:1.5rem 0 2rem;font-size:12px;color:#aaa}
+.footer a{color:#534AB7;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-emoji">🕵️</div>
+    <h1>ИИ или Человек?<br>Детектив-квест</h1>
+    <p>10 глав. 3 варианта ответа. Есть ловушки — иногда оба текста от ИИ или оба от живого человека.<br>Узнай свой уровень!</p>
+    <span class="vpn-note">⚠️ Открывается только через VPN</span>
+  </div>
+
+  <div id="game" class="game">
+    <div class="top"><span class="pill" id="pill"></span><span class="star" id="star">⭐ 0</span></div>
+    <div class="bar"><div class="bar-fill" id="bfill" style="width:0%"></div></div>
+    <div id="trapwrap"></div>
+    <div class="card" id="card">
+      <div class="loc" id="loc"></div>
+      <div class="ttl" id="ttl"></div>
+      <div class="body" id="body"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="fb" id="fb"><div class="fbh" id="fbh"></div><div id="fbt"></div></div>
+    <button class="next" id="next" onclick="go()"></button>
+  </div>
+
+  <div id="end" class="end"></div>
+
+  <div class="footer">Квест от <a href="#">Ксения Лисицкая — Эксперт по нейросетям</a></div>
+
+</div>
+<script>
+var Q=[
+  {color:"#534AB7",bg:"#EEEDFE",border:"#CECBF6",pill:"🌅 Глава 1 · Утро",trap:false,
+   loc:"📱 Открываешь телефон",ttl:"Три поста — кто написал какой?",
+   body:[{l:"Пост А:",t:"Доброе утро! Начни день с улыбки и стакана воды. Твой настрой определяет твой день!"},{l:"Пост Б:",t:"Встала. Кофе. Снова встала. Нормально."},{l:"Пост В:",t:"Утро — лучшее время для планирования задач и настройки на продуктивный день."}],
+   ch:[{t:"🤖 А и В — нейросеть, Б — человек",a:true},{t:"🤖 Только В — нейросеть",a:false},{t:"👤 Все три — живые люди",a:false}],
+   ok:{h:"Глаз-алмаз! 💎",t:"А — мотивационный шаблон, В — деловой совет. Оба ИИ. «Встала. Кофе. Снова встала» — живой человек в 7 утра."},
+   no:{h:"Не угадала! 😄",t:"Пост А тоже ИИ — «твой настрой определяет день» это шаблон. Только Б живой."}},
+
+  {color:"#0F6E56",bg:"#E1F5EE",border:"#9FE1CB",pill:"💼 Глава 2 · Работа",trap:true,trapT:"⚠️ Ловушка — не всё очевидно!",
+   loc:"📄 Три резюме на столе",ttl:"Кто писал с нейросетью?",
+   body:[{l:"Кандидат А:",t:"Опытный специалист с развитыми компетенциями в сфере продаж, ориентированный на результат."},{l:"Кандидат Б:",t:"7 лет в продажах. Лучший менеджер квартала трижды. Однажды закрыла сделку за 20 минут на парковке."},{l:"Кандидат В:",t:"Продажи — это моё. Умею слышать клиента, не давлю, но результат даю. Провальных кварталов не было."}],
+   ch:[{t:"🤖 Только А — нейросеть",a:true},{t:"🤖 А и В — нейросеть",a:false},{t:"🤖 Все три — нейросеть",a:false}],
+   ok:{h:"Детектив-профи! 🕵️",t:"Только А — шаблон: «развитые компетенции», «ориентированный на результат». Б и В живые."},
+   no:{h:"Попалась на ловушку! 😉",t:"В — живой человек, хоть звучит уверенно. Личный голос, своя позиция. ИИ только А."}},
+
+  {color:"#D85A30",bg:"#FAECE7",border:"#F5C4B3",pill:"🍽️ Глава 3 · Ужин",trap:true,trapT:"⚠️ Ловушка — оба могут быть одного типа!",
+   loc:"💻 Отзывы на ресторан",ttl:"Найди живых людей",
+   body:[{l:"Отзыв А:",t:"Отличное заведение! Вкусная кухня, приятная атмосфера, внимательный персонал. Обязательно вернёмся."},{l:"Отзыв Б:",t:"Ресторан предлагает широкий выбор блюд. Интерьер выполнен в современном стиле. Рекомендуем."},{l:"Отзыв В:",t:"Брали стейк. Попросила прожарку медиум — принесли подошву. К атмосфере претензий нет, к мясу — есть."}],
+   ch:[{t:"🤖 А и Б — нейросеть/накрутка",a:true},{t:"🤖 Только Б — нейросеть",a:false},{t:"🤖 Б и В — нейросеть",a:false}],
+   ok:{h:"Ресторанный критик! 🍷",t:"А и Б — шаблоны без деталей. Только В — живой человек: стейк-подошва, конкретная претензия."},
+   no:{h:"Почти! 🥩",t:"Отзыв А тоже ненастоящий — «отличное заведение» шаблон без деталей. Только В живой."}},
+
+  {color:"#993556",bg:"#FBEAF0",border:"#F4C0D1",pill:"💬 Глава 4 · Чат с мамой",trap:false,
+   loc:"📲 Семейный чат",ttl:"Три поздравления маме — найди ИИ",
+   body:[{l:"Поздравление А:",t:"Дорогая мама! Желаю здоровья, счастья, долголетия и всего самого наилучшего!"},{l:"Поздравление Б:",t:"Мам, помнишь тот пирог с вишней в 2007-м? Вот бы сейчас кусочек. С днём рождения. Люблю."},{l:"Поздравление В:",t:"С днём рождения, мам! Сегодня приедем, привезём торт — тот, с вишней, который ты любишь."}],
+   ch:[{t:"🤖 Только А — написал ИИ",a:true},{t:"🤖 А и Б — нейросеть",a:false},{t:"👤 Все три живые",a:false}],
+   ok:{h:"Сердечный детектив! 💛",t:"Только А — шаблон из открытки. Б и В — живые: пирог 2007 года и торт с вишней. Такое помнят только дети."},
+   no:{h:"Б — живой! 🍒",t:"Пирог 2007 года — настоящая семейная память. ИИ такое не придумывает. Только А — шаблон без деталей."}},
+
+  {color:"#3B6D11",bg:"#EAF3DE",border:"#C0DD97",pill:"🌿 Глава 5 · Саморазвитие",trap:false,
+   loc:"📖 Блог о саморазвитии",ttl:"Три совета — кто настоящий автор?",
+   body:[{l:"Совет А:",t:"Чтобы изменить жизнь, начните с малого: просыпайтесь на 30 минут раньше и используйте это время для себя."},{l:"Совет Б:",t:"Я пыталась вставать в 5 утра три месяца. Неделю получалось. Потом поняла — я сова и надо с этим жить, а не воевать."},{l:"Совет В:",t:"Для достижения целей важно формировать привычки постепенно, устанавливая чёткие временные рамки."}],
+   ch:[{t:"🤖 А и В — нейросеть, Б — человек",a:true},{t:"🤖 Только В — нейросеть",a:false},{t:"👤 Все три живые",a:false}],
+   ok:{h:"Совоцентричный детектив! 🦉",t:"А — красивый, но пустой шаблон. В — учебниковый язык. Оба ИИ. Б — три месяца провала и честная капитуляция совы."},
+   no:{h:"Совет А тоже ИИ! 😄",t:"«Просыпайтесь на 30 минут раньше» — классический мотивационный шаблон. Только Б живой."}},
+
+  {color:"#BA7517",bg:"#FAEEDA",border:"#FAC775",pill:"📰 Глава 6 · Погода",trap:true,trapT:"⚠️ Ловушка — оба текста одного типа!",
+   loc:"🗞️ Три заметки о погоде",ttl:"Будь внимательна — здесь подвох!",
+   body:[{l:"Заметка А:",t:"Вышла утром — и сразу назад. Такой ветер, что шапка улетела в сторону Урала. Апрель, говорили. Весна, говорили."},{l:"Заметка Б:",t:"Синоптики прогнозируют понижение температуры. Атмосферное давление нестабильно, возможны осадки."},{l:"Заметка В:",t:"Сегодня за окном как будто природа решила вспомнить зиму — холодно, серо и совершенно без настроения."}],
+   ch:[{t:"👤 А и В — люди, Б — шаблон",a:true},{t:"🤖 Б и В — нейросеть, А — человек",a:false},{t:"🤖 Все три — нейросеть",a:false}],
+   ok:{h:"Метеодетектив! ⛅",t:"Б — официальный сухой шаблон. А и В — живые: шапка летит в Урал, природа «без настроения»."},
+   no:{h:"В — тоже живой! 🌧️",t:"«Природа решила вспомнить зиму» — образный живой язык. Только Б — официальный скучный прогноз. Ловушка сработала!"}},
+
+  {color:"#534AB7",bg:"#EEEDFE",border:"#CECBF6",pill:"🎓 Глава 7 · ИИ-тема",trap:false,
+   loc:"💬 Комментарии под статьёй об ИИ",ttl:"Кто из них настоящий читатель?",
+   body:[{l:"Комментарий А:",t:"ИИ — инструмент, который при правильном использовании значительно повышает продуктивность и качество работы."},{l:"Комментарий Б:",t:"Попросила ИИ написать поздравление маме. Прочитала — и написала сама. Не то. Но теперь понимаю зачем учиться промптам."},{l:"Комментарий В:",t:"Я уже год работаю с нейросетями. Главное — правильно формулировать запросы. Тогда результат будет на высоте."}],
+   ch:[{t:"🤖 А — нейросеть, Б и В — живые",a:true},{t:"🤖 А и В — нейросеть",a:false},{t:"👤 Все три живые",a:false}],
+   ok:{h:"ИИ-грамотность растёт! 🚀",t:"А — пустой шаблон без личного опыта. Б и В — живые: личный опыт, своя позиция."},
+   no:{h:"В — живой человек! 💬",t:"В звучит уверенно, но это личный опыт, не шаблон. ИИ только А: «при правильном использовании повысить продуктивность»."}},
+
+  {color:"#993C1D",bg:"#FAECE7",border:"#F0997B",pill:"🏋️ Глава 8 · Фитнес",trap:true,trapT:"⚠️ Ловушка — оба могут быть живыми!",
+   loc:"📱 Посты в фитнес-блоге",ttl:"Три поста о спорте — найди ИИ",
+   body:[{l:"Пост А:",t:"Регулярные тренировки укрепляют иммунитет, улучшают настроение и снижают риск заболеваний. 15 минут в день — и результат не заставит ждать!"},{l:"Пост Б:",t:"Сегодня не хотела идти на тренировку вообще. Уговаривала себя 20 минут. Пришла. Теперь сижу довольная как слон. Работает, зараза."},{l:"Пост В:",t:"Три года хожу в зал. Первый год — результата ноль, хотела бросить. Потом тренер сказал одну фразу — и всё изменилось. Напишу завтра."}],
+   ch:[{t:"🤖 Только А — нейросеть",a:true},{t:"🤖 А и В — нейросеть",a:false},{t:"👤 Все три живые",a:false}],
+   ok:{h:"Фитнес-детектив! 💪",t:"А — учебниковый шаблон. Б и В — живые: уговоры себя и интрига «напишу завтра»."},
+   no:{h:"В — живой и с интригой! 🎣",t:"«Напишу завтра» — крючок живого человека. Только А скучный шаблон."}},
+
+  {color:"#185FA5",bg:"#E6F1FB",border:"#B5D4F4",pill:"🛠️ Глава 9 · Сервис",trap:true,trapT:"⚠️ Ловушка — здесь два ИИ-текста!",
+   loc:"💬 Отзывы о сервисе",ttl:"Найди единственного живого человека",
+   body:[{l:"Текст А:",t:"Здравствуйте! Ваше обращение зарегистрировано. Ожидайте ответа в течение 3–5 рабочих дней. Приносим извинения за неудобства."},{l:"Текст Б:",t:"Сервис предоставляет широкий спектр услуг для физических и юридических лиц. Мы ценим каждого клиента."},{l:"Текст В:",t:"Ждала ответа 8 дней. Написала снова. Ответили через час. Оказалось — письмо попало в спам. Всё решили, но нервов потрепали."}],
+   ch:[{t:"👤 Только В — живой человек",a:true},{t:"👤 А и В — живые люди",a:false},{t:"🤖 Все три — шаблоны",a:false}],
+   ok:{h:"Нашла иголку в стоге! 🎯",t:"А — ботовый скрипт. Б — корпоративный шаблон. Только В — живой: 8 дней, спам, нервы и хэппи-энд."},
+   no:{h:"А — это бот! 🤖",t:"«Ваше обращение зарегистрировано» — классический скрипт. Только В настоящий."}},
+
+  {color:"#3C3489",bg:"#EEEDFE",border:"#AFA9EC",pill:"🌙 Финал · Ночь",trap:true,trapT:"⚠️ Финальная ловушка!",
+   loc:"📱 Ночная лента. 23:00",ttl:"Три поста перед сном — кто живой?",
+   body:[{l:"Пост А:",t:"Каждый день — это новая возможность стать лучше. Не сдавайся, верь в себя, и всё обязательно получится!"},{l:"Пост Б:",t:"Сегодня поняла кое-что важное. Когда устаёшь не от работы, а от того, что делаешь не своё — это другая усталость. Тяжелее. Но честнее."},{l:"Пост В:",t:"Не могу уснуть. Думаю о разговоре, который был три года назад. Зачем мозг это делает? Риторический вопрос."}],
+   ch:[{t:"👤 Б и В — люди, А — нейросеть",a:true},{t:"🤖 А и В — нейросеть, Б — человек",a:false},{t:"🤖 Только А — нейросеть",a:false}],
+   ok:{h:"Финал покорён! 🏆",t:"А — мотивационный шаблон. Б — поиск слов в 23:00. В — бессонница и риторический вопрос к мозгу. Б и В живые!"},
+   no:{h:"В — тоже живой! 🌙",t:"Бессонница, мысли о разговоре трёхлетней давности — живой человек ночью. Только А шаблон."}}
+];
+
+var cur=0,score=0,ans=false;
+
+function render(){
+  var s=Q[cur];
+  var p=document.getElementById('pill');
+  p.textContent=s.pill; p.style.background=s.bg; p.style.color=s.color;
+  document.getElementById('bfill').style.width=(cur/Q.length*100)+'%';
+  document.getElementById('bfill').style.background=s.color;
+  document.getElementById('star').textContent='⭐ '+score;
+  document.getElementById('trapwrap').innerHTML=s.trap?'<div class="trap">'+s.trapT+'</div>':'';
+  var c=document.getElementById('card');
+  c.style.background=s.bg; c.style.borderColor=s.border;
+  document.getElementById('loc').textContent=s.loc; document.getElementById('loc').style.color=s.color;
+  document.getElementById('ttl').textContent=s.ttl; document.getElementById('ttl').style.color=s.color;
+  var b=document.getElementById('body'); b.innerHTML='';
+  s.body.forEach(function(x){
+    var l=document.createElement('span'); l.className='lbl'; l.textContent=x.l; l.style.color=s.color;
+    b.appendChild(l); b.appendChild(document.createTextNode(x.t));
+  });
+  var ch=document.getElementById('choices'); ch.innerHTML='';
+  s.ch.forEach(function(x,i){
+    var btn=document.createElement('button'); btn.className='btn'; btn.textContent=x.t;
+    btn.onclick=function(){pick(i);};
+    ch.appendChild(btn);
+  });
+  document.getElementById('fb').className='fb';
+  document.getElementById('next').style.display='none';
+  ans=false;
+}
+
+function pick(idx){
+  if(ans)return; ans=true;
+  var s=Q[cur];
+  var btns=document.querySelectorAll('.btn');
+  btns.forEach(function(b){b.disabled=true;});
+  var ok=s.ch[idx].a;
+  if(ok)score++;
+  btns[idx].className='btn '+(ok?'ok':'no');
+  if(!ok){var ci=s.ch.findIndex(function(c){return c.a;});btns[ci].className='btn ok';}
+  var d=ok?s.ok:s.no;
+  document.getElementById('fbh').textContent=d.h;
+  document.getElementById('fbt').textContent=d.t;
+  document.getElementById('fb').className='fb show '+(ok?'ok':'no');
+  document.getElementById('star').textContent='⭐ '+score;
+  var n=document.getElementById('next');
+  n.style.display='block';
+  n.textContent=cur<Q.length-1?'Следующая глава →':'🏆 Узнать свой уровень →';
+}
+
+function go(){
+  cur++;
+  if(cur>=Q.length)fin();
+  else render();
+}
+
+function fin(){
+  document.getElementById('bfill').style.width='100%';
+  document.getElementById('game').style.display='none';
+  var e=document.getElementById('end');
+  e.style.display='block';
+  var lv;
+  if(score<=4)lv={e:'🌱',badge:'Новичок',bc:'#FAEEDA',tc:'#633806',t:'ИИ тебя ещё обманывает — версия была сложная! Подписывайся, прокачиваемся вместе 🙌'};
+  else if(score<=6)lv={e:'🔍',badge:'Детектив ИИ',bc:'#E1F5EE',tc:'#085041',t:'Хороший результат! Ловушки немного запутали, но основное чувствуешь верно. Ещё немного — и станешь экспертом!'};
+  else if(score<=8)lv={e:'🚀',badge:'Продвинутый',bc:'#E6F1FB',tc:'#0C447C',t:'Отлично! Справляешься даже с ловушками. Очень сильный уровень — почти эксперт!'};
+  else lv={e:'🏆',badge:'Эксперт ИИ',bc:'#EEEDFE',tc:'#3C3489',t:'Феноменально! Все ловушки — и не сломалась. Настоящий ИИ-детектив! 🚀'};
+  var share='Прошла сложный квест «ИИ или Человек?» — '+score+'/10 '+lv.e+' Там есть ловушки! Попробуй сама! (не забудь VPN 😄)';
+  e.innerHTML='<div style="font-size:52px;margin-bottom:6px">'+lv.e+'</div>'
+    +'<div class="escore">'+score+' / 10</div>'
+    +'<div class="esub">правильных ответов</div>'
+    +'<span class="ebadge" style="background:'+lv.bc+';color:'+lv.tc+'">'+lv.badge+'</span>'
+    +'<div class="etext">'+lv.t+'</div>'
+    +'<div class="sharebox">💬 Скопируй и отметь подругу:<div class="sharetext">'+share+'</div></div>'
+    +'<button class="restart" onclick="restart()">Сыграть ещё раз</button>';
+}
+
+function restart(){
+  cur=0;score=0;
+  document.getElementById('end').style.display='none';
+  document.getElementById('game').style.display='block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
